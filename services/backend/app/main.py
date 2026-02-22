@@ -6,9 +6,16 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db import engine, get_db
+from app.dialogue import ProspectState, generate_prospect_turn
 from app.models import Base, SessionRecord
 from app.persona import PersonaGenerator
-from app.schemas import SessionCreate, SessionCreateResponse, SessionReadResponse
+from app.schemas import (
+    DialogueRequest,
+    DialogueResponse,
+    SessionCreate,
+    SessionCreateResponse,
+    SessionReadResponse,
+)
 
 app = FastAPI()
 Base.metadata.create_all(bind=engine)
@@ -56,4 +63,18 @@ def get_session(session_id: str, db: Session = Depends(get_db)) -> SessionReadRe
         role=session.role,
         primary_objection=session.primary_objection,
         created_at=session.created_at,
+    )
+
+
+@app.post("/dialogue/turn", response_model=DialogueResponse)
+def dialogue_turn(payload: DialogueRequest) -> DialogueResponse:
+    turn = generate_prospect_turn(
+        state=ProspectState(trust=payload.trust, resistance=payload.resistance),
+        trainee_text=payload.trainee_text,
+        persona={"primary_objection": payload.primary_objection},
+    )
+    return DialogueResponse(
+        text=turn.text,
+        trust=turn.next_state.trust,
+        resistance=turn.next_state.resistance,
     )

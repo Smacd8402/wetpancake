@@ -20,3 +20,16 @@ class SessionReadResponse(BaseModel):
     role: str
     primary_objection: str
     created_at: datetime
+
+
+class DialogueRequest(BaseModel):
+    trust: float = Field(ge=0.0, le=1.0)
+    resistance: float = Field(ge=0.0, le=1.0)
+    trainee_text: str
+    primary_objection: str = "busy"
+
+
+class DialogueResponse(BaseModel):
+    text: str
+    trust: float
+    resistance: float
