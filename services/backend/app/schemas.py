@@ -33,3 +33,15 @@ class DialogueResponse(BaseModel):
     text: str
     trust: float
     resistance: float
+
+
+class ScoringRequest(BaseModel):
+    transcript: list[dict]
+    outcomes: dict
+
+
+class ScoringResponse(BaseModel):
+    total_score: int
+    dimensions: dict
+    misses: list[str]
+    replacement_phrasing: dict

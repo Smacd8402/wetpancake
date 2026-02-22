@@ -12,10 +12,13 @@ from app.persona import PersonaGenerator
 from app.schemas import (
     DialogueRequest,
     DialogueResponse,
+    ScoringRequest,
+    ScoringResponse,
     SessionCreate,
     SessionCreateResponse,
     SessionReadResponse,
 )
+from app.scoring import score_session
 
 app = FastAPI()
 Base.metadata.create_all(bind=engine)
@@ -78,3 +81,8 @@ def dialogue_turn(payload: DialogueRequest) -> DialogueResponse:
         trust=turn.next_state.trust,
         resistance=turn.next_state.resistance,
     )
+
+
+@app.post("/sessions/score", response_model=ScoringResponse)
+def session_score(payload: ScoringRequest) -> ScoringResponse:
+    return ScoringResponse(**score_session(payload.transcript, payload.outcomes))
