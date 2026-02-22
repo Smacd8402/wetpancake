@@ -1,4 +1,6 @@
-﻿from pydantic import BaseModel, Field
+﻿from datetime import datetime
+
+from pydantic import BaseModel, Field
 
 
 class SessionCreate(BaseModel):
@@ -8,3 +10,10 @@ class SessionCreate(BaseModel):
 class SessionCreateResponse(BaseModel):
     session_id: str
     seed: int
+
+
+class SessionReadResponse(BaseModel):
+    session_id: str
+    seed: int
+    duration_minutes: int
+    created_at: datetime
