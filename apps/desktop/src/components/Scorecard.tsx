@@ -3,9 +3,14 @@
 type ScorecardProps = {
   total: number;
   dimensions: Record<string, number>;
+  misses: string[];
+  replacement: {
+    actual: string;
+    stronger: string;
+  };
 };
 
-export function Scorecard({ total, dimensions }: ScorecardProps): JSX.Element {
+export function Scorecard({ total, dimensions, misses, replacement }: ScorecardProps): JSX.Element {
   return (
     <section>
       <h2>Post-Call Scorecard</h2>
@@ -17,6 +22,21 @@ export function Scorecard({ total, dimensions }: ScorecardProps): JSX.Element {
           </li>
         ))}
       </ul>
+
+      <h3>Top Misses</h3>
+      <ul>
+        {misses.map((m) => (
+          <li key={m}>{m}</li>
+        ))}
+      </ul>
+
+      <h3>Replacement Phrasing</h3>
+      <p>
+        <strong>Actual:</strong> {replacement.actual}
+      </p>
+      <p>
+        <strong>Stronger:</strong> {replacement.stronger}
+      </p>
     </section>
   );
 }

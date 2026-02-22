@@ -45,3 +45,11 @@ class ScoringResponse(BaseModel):
     dimensions: dict
     misses: list[str]
     replacement_phrasing: dict
+
+
+class STTResponse(BaseModel):
+    text: str
+
+
+class TTSRequest(BaseModel):
+    text: str

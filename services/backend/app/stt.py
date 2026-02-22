@@ -31,13 +31,25 @@ class WhisperCliSTTService(STTService):
         command = self.command_template.format(
             input_wav=str(input_wav),
             output_txt=str(output_txt),
+            output_dir=str(RUNTIME_IO_DIR),
         )
-        proc = subprocess.run(command, shell=True, capture_output=True, text=True)
+        proc = subprocess.run(
+            command,
+            shell=True,
+            capture_output=True,
+            text=True,
+            cwd=RUNTIME_IO_DIR,
+        )
         if proc.returncode != 0:
             raise RuntimeError(f"STT command failed: {proc.stderr.strip()}")
 
         if output_txt.exists():
             text = output_txt.read_text(encoding="utf-8").strip()
+            if text:
+                return text
+        alt_txt = RUNTIME_IO_DIR / f"{input_wav.stem}.txt"
+        if alt_txt.exists():
+            text = alt_txt.read_text(encoding="utf-8").strip()
             if text:
                 return text
 

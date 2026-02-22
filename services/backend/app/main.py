@@ -4,7 +4,8 @@ from random import randint
 from uuid import uuid4
 
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
+from fastapi.responses import Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -21,8 +22,12 @@ from app.schemas import (
     SessionCreate,
     SessionCreateResponse,
     SessionReadResponse,
+    STTResponse,
+    TTSRequest,
 )
 from app.scoring import score_session
+from app.stt import STTService, WhisperCliSTTService
+from app.tts import PiperCliTTSService, TTSService
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 load_dotenv(REPO_ROOT / ".env")
@@ -33,6 +38,14 @@ persona_generator = PersonaGenerator()
 ollama_client = OllamaClient(
     base_url=os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434"),
     model=os.getenv("OLLAMA_MODEL", "mistral:7b"),
+)
+
+_whisper_cmd = os.getenv("WHISPER_CMD_TEMPLATE", "")
+_piper_cmd = os.getenv("PIPER_CMD_TEMPLATE", "")
+_piper_voice = os.getenv("PIPER_VOICE_PATH", "")
+stt_service: STTService = WhisperCliSTTService(_whisper_cmd) if _whisper_cmd else STTService()
+tts_service: TTSService = (
+    PiperCliTTSService(_piper_cmd, _piper_voice) if _piper_cmd and _piper_voice else TTSService()
 )
 
 
@@ -89,6 +102,25 @@ def get_session(session_id: str, db: Session = Depends(get_db)) -> SessionReadRe
         primary_objection=session.primary_objection,
         created_at=session.created_at,
     )
+
+
+@app.post("/stt/transcribe", response_model=STTResponse)
+async def stt_transcribe(audio: UploadFile = File(...)) -> STTResponse:
+    data = await audio.read()
+    try:
+        text = stt_service.transcribe_chunk(data)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    return STTResponse(text=text)
+
+
+@app.post("/tts/synthesize")
+def tts_synthesize(payload: TTSRequest) -> Response:
+    try:
+        wav = tts_service.synthesize(payload.text)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    return Response(content=wav, media_type="audio/wav")
 
 
 @app.post("/dialogue/turn", response_model=DialogueResponse)
