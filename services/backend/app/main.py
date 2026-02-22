@@ -133,7 +133,13 @@ def dialogue_turn(payload: DialogueRequest) -> DialogueResponse:
             llm_client=ollama_client,
         )
     except RuntimeError as exc:
-        raise HTTPException(status_code=503, detail=str(exc)) from exc
+        # If local LLM runtime is unavailable, degrade to deterministic rule-based output.
+        turn = generate_prospect_turn(
+            state=ProspectState(trust=payload.trust, resistance=payload.resistance),
+            trainee_text=payload.trainee_text,
+            persona={"primary_objection": payload.primary_objection},
+            llm_client=None,
+        )
 
     return DialogueResponse(
         text=turn.text,

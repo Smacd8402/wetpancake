@@ -4,6 +4,6 @@
   "private": true,
   "main": "electron/main.ts",
   "scripts": {
-    "dev": "echo \"Desktop scaffold ready\""
+    "dev": "py -m http.server 5173 --bind 127.0.0.1"
   }
 }

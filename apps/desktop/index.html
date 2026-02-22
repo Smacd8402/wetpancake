@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wetpancake B2B Call Trainer</title>
+    <style>
+      body {
+        font-family: Segoe UI, sans-serif;
+        margin: 24px;
+        line-height: 1.4;
+      }
+      main,
+      section {
+        max-width: 860px;
+      }
+      button {
+        margin: 8px 8px 8px 0;
+        padding: 8px 14px;
+      }
+      .hidden {
+        display: none;
+      }
+      .error {
+        color: #b00020;
+        font-weight: 600;
+      }
+      .status {
+        color: #0a5;
+      }
+      .row {
+        margin: 8px 0;
+      }
+      ul {
+        padding-left: 20px;
+      }
+      label {
+        margin-right: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <main id="idle-view">
+      <h1>Wetpancake B2B Call Trainer</h1>
+      <button id="start-call-btn" type="button">Start Call</button>
+      <p class="error hidden" id="idle-error"></p>
+    </main>
+
+    <section class="hidden" id="in-call-view">
+      <h2>Call in progress</h2>
+      <p id="in-call-status">Live prospect simulation is active.</p>
+      <button id="hold-release-btn" type="button">Hold To Talk</button>
+      <button id="end-call-btn" type="button">End Call</button>
+
+      <div class="row">
+        <label>
+          <input id="close-attempt" type="checkbox" />
+          Close attempt made
+        </label>
+        <label>
+          <input id="value-statement" type="checkbox" />
+          Value statement delivered
+        </label>
+        <label>
+          <input id="objection-resolved" type="checkbox" />
+          Objection resolved
+        </label>
+      </div>
+
+      <h3>Transcript</h3>
+      <ul id="transcript-list"></ul>
+      <p class="error hidden" id="call-error"></p>
+    </section>
+
+    <section class="hidden" id="scorecard-view">
+      <h2>Post-Call Scorecard</h2>
+      <p id="score-total"></p>
+      <ul id="score-dimensions"></ul>
+      <h3>Top Misses</h3>
+      <ul id="score-misses"></ul>
+      <h3>Replacement Phrasing</h3>
+      <p id="score-actual"></p>
+      <p id="score-stronger"></p>
+      <button id="restart-btn" type="button">Start New Call</button>
+    </section>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
