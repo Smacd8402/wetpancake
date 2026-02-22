@@ -2,14 +2,17 @@
 from uuid import uuid4
 
 from fastapi import Depends, FastAPI, HTTPException
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db import engine, get_db
 from app.models import Base, SessionRecord
+from app.persona import PersonaGenerator
 from app.schemas import SessionCreate, SessionCreateResponse, SessionReadResponse
 
 app = FastAPI()
 Base.metadata.create_all(bind=engine)
+persona_generator = PersonaGenerator()
 
 
 @app.get("/health")
@@ -19,10 +22,21 @@ def health() -> dict[str, str]:
 
 @app.post("/sessions", response_model=SessionCreateResponse, status_code=201)
 def create_session(payload: SessionCreate, db: Session = Depends(get_db)) -> SessionCreateResponse:
+    recent_rows = db.execute(
+        select(SessionRecord.primary_objection).order_by(SessionRecord.created_at.desc()).limit(20)
+    ).all()
+    recent_sessions = [{"primary_objection": row[0]} for row in recent_rows]
+
+    seed = randint(1, 10_000_000)
+    persona = persona_generator.generate(seed=seed, recent_sessions=recent_sessions)
+
     session = SessionRecord(
         session_id=str(uuid4()),
-        seed=randint(1, 10_000_000),
+        seed=seed,
         duration_minutes=payload.duration_minutes,
+        industry=persona.industry,
+        role=persona.role,
+        primary_objection=persona.primary_objection,
     )
     db.add(session)
     db.commit()
@@ -38,5 +52,8 @@ def get_session(session_id: str, db: Session = Depends(get_db)) -> SessionReadRe
         session_id=session.session_id,
         seed=session.seed,
         duration_minutes=session.duration_minutes,
+        industry=session.industry,
+        role=session.role,
+        primary_objection=session.primary_objection,
         created_at=session.created_at,
     )

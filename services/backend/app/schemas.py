@@ -16,4 +16,7 @@ class SessionReadResponse(BaseModel):
     session_id: str
     seed: int
     duration_minutes: int
+    industry: str
+    role: str
+    primary_objection: str
     created_at: datetime
