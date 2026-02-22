@@ -1,7 +1,9 @@
-﻿import os
+﻿from pathlib import Path
+import os
 from random import randint
 from uuid import uuid4
 
+from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -21,6 +23,9 @@ from app.schemas import (
     SessionReadResponse,
 )
 from app.scoring import score_session
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+load_dotenv(REPO_ROOT / ".env")
 
 app = FastAPI()
 Base.metadata.create_all(bind=engine)
