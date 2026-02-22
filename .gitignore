@@ -9,3 +9,8 @@ __pycache__/
 
 services/backend/data/
 .pytest_cache/
+
+services/backend/.runtime_tmp/
+services/backend/.runtime_test/
+
+services/backend/pytest-cache-files-*/

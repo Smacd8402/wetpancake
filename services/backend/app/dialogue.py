@@ -1,5 +1,8 @@
-﻿from dataclasses import dataclass
+﻿import json
+from dataclasses import dataclass
 from typing import Protocol
+from urllib import request
+from urllib.error import URLError
 
 
 @dataclass(frozen=True)
@@ -16,6 +19,41 @@ class DialogueTurn:
 
 class LocalLLMClient(Protocol):
     def generate(self, prompt: str) -> str: ...
+
+
+class OllamaClient:
+    def __init__(self, base_url: str, model: str, timeout_seconds: float = 15.0):
+        self.base_url = base_url.rstrip("/")
+        self.model = model
+        self.timeout_seconds = timeout_seconds
+
+    def generate(self, prompt: str) -> str:
+        payload = json.dumps(
+            {
+                "model": self.model,
+                "prompt": prompt,
+                "stream": False,
+                "options": {"temperature": 0.35},
+            }
+        ).encode("utf-8")
+        req = request.Request(
+            f"{self.base_url}/api/generate",
+            data=payload,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        try:
+            with request.urlopen(req, timeout=self.timeout_seconds) as resp:
+                body = json.loads(resp.read().decode("utf-8"))
+        except URLError as exc:
+            raise RuntimeError(f"Ollama request failed: {exc}") from exc
+        except json.JSONDecodeError as exc:
+            raise RuntimeError("Ollama returned invalid JSON") from exc
+
+        response_text = body.get("response")
+        if not response_text:
+            raise RuntimeError("Ollama response missing 'response' field")
+        return str(response_text).strip()
 
 
 def _clamp(value: float) -> float:
@@ -41,8 +79,11 @@ def generate_prospect_turn(
 
     if llm_client is not None:
         prompt = (
-            f"Prospect objection={objection}, trust={next_state.trust:.2f}, "
-            f"resistance={next_state.resistance:.2f}. Respond briefly to: {trainee_text}"
+            "You are a realistic B2B cold call prospect. "
+            f"Current objection style: {objection}. "
+            f"Trust={next_state.trust:.2f}, resistance={next_state.resistance:.2f}. "
+            "Reply in one short spoken sentence, natural and slightly skeptical.\n"
+            f"Trainee said: {trainee_text}"
         )
         text = llm_client.generate(prompt)
     else:
