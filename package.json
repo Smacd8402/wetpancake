@@ -1,0 +1,13 @@
+﻿{
+  "name": "wetpancake",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "services/*"
+  ],
+  "scripts": {
+    "desktop:dev": "npm --workspace apps/desktop run dev",
+    "backend:test": "python -m pytest -v"
+  }
+}
