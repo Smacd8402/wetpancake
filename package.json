@@ -1,9 +1,13 @@
 ﻿{
-  "name": "desktop",
-  "version": "0.1.0",
+  "name": "wetpancake",
   "private": true,
-  "main": "electron/main.ts",
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "services/*"
+  ],
   "scripts": {
-    "dev": "echo \"Desktop scaffold ready\""
+    "desktop:dev": "npm --workspace apps/desktop run dev",
+    "backend:test": "python -m pytest -v"
   }
 }

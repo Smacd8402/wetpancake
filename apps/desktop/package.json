@@ -1,0 +1,9 @@
+﻿{
+  "name": "desktop",
+  "version": "0.1.0",
+  "private": true,
+  "main": "electron/main.ts",
+  "scripts": {
+    "dev": "py -m http.server 5173 --bind 127.0.0.1"
+  }
+}
